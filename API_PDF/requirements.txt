@@ -1,0 +1,8 @@
+fastapi 
+redis-om
+uvicorn 
+# "fastapi[standard]"
+requests 
+pymongo
+pydantic-settings 
+reportlab
