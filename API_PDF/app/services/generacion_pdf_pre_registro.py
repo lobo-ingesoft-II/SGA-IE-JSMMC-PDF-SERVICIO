@@ -6,6 +6,7 @@ from reportlab.lib.units import inch, cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (SimpleDocTemplate, PageBreak, Image, Spacer,Paragraph, Table, TableStyle, )
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 from datetime import datetime, timedelta, timezone as datetimeTimeZone
 
@@ -72,6 +73,41 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
     # Llamar a los Estilos
     styles = getSampleStyleSheet() # nos da una lista de estilos a escoger de la biblioteca
     
+
+    # Creacion estilo <--  Titulos
+    styleHeaderPrincipal = ParagraphStyle(
+        'HeaderPrincipal',
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#003366"),
+        spaceAfter=6,
+        spaceBefore=6,
+        leading=22,
+    )
+
+    #  Creacion estilo <--  subtítulos
+    styleSubHeader_blue = ParagraphStyle(
+        'SubHeader',
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#003366"),
+        spaceAfter=2,
+        spaceBefore=2,
+        leading=15,
+    )
+
+    styleSubHeader_black = ParagraphStyle(
+        'SubHeader',
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#000000"),
+        spaceAfter=2,
+        spaceBefore=2,
+        leading=15,
+    )
     # Creacion estilo <-- header tabla
     styleHeaderTable = ParagraphStyle('styleHeaderTable',  
         parent= styles['Heading1'],
@@ -79,143 +115,332 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
         alignment=1  # Center alignment
     )
 
+    # Creacion estilo <-- header tabla 2 
+    styleHeaderTable2 = ParagraphStyle(
+        'styleHeaderTable',
+        parent=styles['Heading4'],
+        fontSize=11,
+        fontName='Helvetica-Bold',
+        alignment=TA_CENTER,
+        textColor=colors.white,
+        backColor=colors.HexColor("#003366"),  # Azul oscuro
+        spaceAfter=4,
+        spaceBefore=4,
+        leading=14,
+        borderPadding=4,
+    )
+
     # Creacion estilo <-- contenido tabla   
     styleBodyTable = ParagraphStyle('p',  
         parent=styles["BodyText"],
-        fontSize=7, 
-        alignment=1  # Center alignment
+        fontSize=10, 
+        alignment= TA_LEFT  # Left alignment
     )
 
     ##---------------------------- KEYS DE LAS TABLAS -------------------------------------
 
-    keys_info_personal_estudiante = [
-    "apellidos",
-    "nombres",
-    "tipoDocumento",
-    "numeroDocumento",          # Representa el número del documento
-    "fechaNacimiento",          # mm/dd/yyyy
-    "paisNacimiento",           # COLOMBIA
-    "departamentoNacimiento",
-    "municipioNacimiento",
-    "categoriaSisben",
-    "subcategoriaSisben",
-    "direccionResidencia",
-    "telefono",                 # Teléfono / Celular
-    "rutaEscolar",
-    "seguroMedico",
-    "discapacidad",
-    "detalleDiscapacidad",      # Puede ir como parte de discapacidad
-    "poblacionDesplazada",
-    "fechaDesplazamiento",      # Puede omitirse si no aplica
-    "paisResidencia",           # COLOMBIA
-    "departamentoResidencia",
-    "municipioResidencia"]
+    keys_info_personal_estudiante = {
+        "apellidos": "Apellidos",
+        "nombres": "Nombres",
+        "tipoDocumento": "Tipo de documento",
+        "numeroDocumento": "Número de documento",
+        "fechaNacimiento": "Fecha de nacimiento",
+        "paisNacimiento": "País de nacimiento",
+        "departamentoNacimiento": "Departamento de nacimiento",
+        "municipioNacimiento": "Municipio de nacimiento",
+        "categoriaSisben": "Categoría Sisbén",
+        "subcategoriaSisben": "Subcategoría Sisbén",
+        "direccionResidencia": "Dirección de residencia",
+        "telefono": "Teléfono",
+        "rutaEscolar": "Ruta escolar",
+        "seguroMedico": "Seguro médico",
+        "discapacidad": "Discapacidad",
+        "detalleDiscapacidad": "Detalle de discapacidad",
+        "poblacionDesplazada": "Población desplazada",
+        "fechaDesplazamiento": "Fecha de desplazamiento",
+        "paisResidencia": "País de residencia",
+        "departamentoResidencia": "Departamento de residencia",
+        "municipioResidencia": "Municipio de residencia",
+    }
 
-    keys_info_academica = [
-    "gradoIngreso",
-    "institucionAnterior",
-    "municipioAnterior",
-    "sede"
-    ]
+    # keys Informacion academica
+    keys_info_academica = {
+        "gradoIngreso": "Grado de ingreso",
+        "institucionAnterior": "Institución anterior",
+        "municipioAnterior": "Municipio anterior",
+        "sede": "Sede"
+    }
 
     # keys Informacion familiar 
-    keys_acudiente1 = [
-    "acudiente1Parentesco",
-    "acudiente1Apellidos",
-    "acudiente1Nombres",
-    "acudiente1CC",
-    "acudiente1Celular",
-    "acudiente1Ocupacion"
-    ]
+    keys_acudiente1 = {
+        "acudiente1Parentesco": "Parentesco",
+        "acudiente1Apellidos": "Apellidos",
+        "acudiente1Nombres": "Nombres",
+        "acudiente1CC": "Cédula",
+        "acudiente1Celular": "Celular",
+        "acudiente1Ocupacion": "Ocupación"
+    }
 
-    keys_acudiente2 = [
-        "acudiente2Parentesco",
-        "acudiente2Apellidos",
-        "acudiente2Nombres",
-        "acudiente2CC",
-        "acudiente2Celular",
-        "acudiente2Ocupacion"
-    ]
+    keys_acudiente2 = {
+        "acudiente2Parentesco": "Parentesco",
+        "acudiente2Apellidos": "Apellidos",
+        "acudiente2Nombres": "Nombres",
+        "acudiente2CC": "Cédula",
+        "acudiente2Celular": "Celular",
+        "acudiente2Ocupacion": "Ocupación"
+    }
 
-
+    heighDocumento = 770  # Altura de las filas del documento
+    ancho_pagina, _ = A4  # Obtener el ancho de la página A4
     ##------------------------------  HEADER   ---------------------------------
         #HEADER-titulo
-    lienzo.setLineWidth(.3)
-    lienzo.setFont('Helvetica', 22)
-            # X desde el lad IZQ cuanto mover a la DER
-            # y desde al lad ABJ cuanto mover ARRIBA
-        # header-subtitulo
-    lienzo.drawString(x=30, y=750,text='INSTITUCION EDUCATIVA DEPARTAMENTAL JOSUE MANRIQUE')
-    lienzo.setFont('Helvetica', 12)
+
+    # Header principal
+    header = Paragraph("INSTITUCIÓN EDUCATIVA DEPARTAMENTAL JOSUÉ MANRIQUE", styleHeaderPrincipal)
+    w, h = header.wrap(ancho_pagina - 60, heighDocumento)
+    header.drawOn(lienzo, 30, heighDocumento)
+    heighDocumento -= h
+
+    # Subtítulo
+    subheader = Paragraph("INSPECCIÓN DE MAYA. PARATEBUENO", styleSubHeader_blue)
+    w, h = subheader.wrap(ancho_pagina - 60, heighDocumento)
+    subheader.drawOn(lienzo, 30, heighDocumento)
+    heighDocumento -= h
+
+    # Celular
+    celular = Paragraph("Celular: 320-4400-124", styleSubHeader_blue)
+    w, h = celular.wrap(ancho_pagina - 60, heighDocumento)
+    celular.drawOn(lienzo, 30, heighDocumento)
+    heighDocumento -= h
+
+    # Correo electrónico
+    correo = Paragraph("Correo electrónico: coljosman@hotmail.com", styleSubHeader_blue)
+    w, h = correo.wrap(ancho_pagina - 60, heighDocumento)
+    correo.drawOn(lienzo, 30, heighDocumento)
+    heighDocumento -= h
+
+    # HEADER-hora 
+    hora_inicio_reserva = datetime.now(datetimeTimeZone.utc) + timedelta(hours=-5)
+    fecha_formateada = hora_inicio_reserva.strftime('%Y-%m-%d %H:%M:%S')
+    fecha = Paragraph(f"Fecha de impresión: {fecha_formateada}", styleSubHeader_black)
+    w, h = fecha.wrap(ancho_pagina - 60, heighDocumento)
+    fecha.drawOn(lienzo, ancho_pagina-250, heighDocumento)
+    heighDocumento -= h
 
 
-    lienzo.drawString(30, 730, "Reporte PRESTAMOS")
-
-        # HEADER-hora
-    hora_inicio_reserva = datetime.now(datetimeTimeZone.utc) + timedelta(hours=-5) # Ajustar a la zona horaria de Colombia (UTC-5)
-    fecha_formateada = hora_inicio_reserva.strftime('%Y-%m-%d %H:%M:%S')           # Formatear la fecha y hora
-    
-    lienzo.setFont("Helvetica-Bold", 12)
-    lienzo.drawString(350, 750, f"Fecha Reporte: {fecha_formateada}")
-    
- 
     ## ------------------ PRIMERA TABLA (informacion personal estudiante) ----------------------------------
+    # Nombre de la tabla
+    heighDocumento -= 30  
+    nombreTabla = Paragraph("INFORMACIÓN PERSONAL DEL ESTUDIANTE: ", styleSubHeader_black)
+    w, h = nombreTabla.wrap(ancho_pagina - 60, heighDocumento)
+    nombreTabla.drawOn(lienzo, 40, heighDocumento)
+    heighDocumento -= h
+
     data = []  # Array de datos para la tabla
 
-    # TITULOS DE LA TABLA (primera fila); los estilos ya estan creados entonces solo colocar la tabla
-    Campo      = Paragraph('Campo', styleHeaderTable) # Paragraph <-- le da estilo a un texto 
-    Dato    = Paragraph('Dato', styleHeaderTable)
+    # Titulos de la tabla (primera fila); los estilos ya estan creados entonces solo colocar la tabla
+    Campo      = Paragraph('Campo', styleHeaderTable2) # Paragraph <-- le da estilo a un texto 
+    Dato    = Paragraph('Dato', styleHeaderTable2)
   
     
     data.append([Campo, Dato]) # Pasar datos al (array data)
-    highBeforeTable = 700           # # Variable HIGH para saber el inicio de la tabla, desde donde se dibuja la tabla
-    highTable = 700                 # Variable HIGH para saber cuanto mover la tabla relativamente hacia arriba 
-    highRow = 18                # Variable para la altura de las filas de la tabla
+    highTable = heighDocumento                  # Variable HIGH para saber cuanto mover la tabla relativamente hacia arriba 
+    highRow = 15                # Variable para la altura de las filas de la tabla
 
     # Agregar datos al array de datos (data) de la tabla 
-    for key in keys_info_personal_estudiante:
+    for key in keys_info_personal_estudiante.keys():
        
         # Obtener el valor del JSON usando la key
         item = JSONRespuesta.get(key, 'No disponible')  # Usar 'No disponible' si la clave no existe
+        
+        if item == "": # Si el item es una cadena vacía, asignar un valor por defecto
+            item = 'No aplica-no rellenado'  # Si el valor es una cadena vacía, asignar un valor por defecto
 
         # Crear una fila con el campo y el dato dandole estilo 
-        row = [Paragraph(key, styleHeaderTable), Paragraph(str(item), styleBodyTable)]
+        row = [Paragraph(keys_info_personal_estudiante.get(key), styleHeaderTable), Paragraph(str(item), styleBodyTable)]
         data.append(row)
 
         highTable -= highRow  # Reducir el valor de high para la siguiente fila
-        data.append(row) 
-
 
         if highTable < 360:     # CAMBIAR PAGINA, si se pasa de un numero de datos o high especifico 
             
             # Poner tabla en el CANVAS
-            crearTablaReportLab(data, lienzo, 5, valorHigh= 700, PonerDesdeLimiteAbajo = True, alturaRow= highRow, anchoCol= 3.7)
+            crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable , PonerDesdeLimiteAbajo = True, alturaRow= highRow, anchoCol= 8.5 , cambiar_pagina=True)
 
-            # Cambiar el high a 750, ya que alcanzo limite pagina 
-            high = 750
+            # Cambiar el high a 770, ya que alcanzo limite pagina 
+            highTable = 770
+            heighDocumento = 770
             
             # Limpiar datos del array de datos de la tabla 
             data.clear() 
 
             # Agregar los (nombres Columnas) a la tabla otra vez 
             data.append([Campo, Dato])
+            highTable -= highRow 
 
     
     # PARA LOS DATOS RESTANTES, si falto dibujar una parte de la tabla
-    crearTablaReportLab(data, lienzo, 5, valorHigh=600, PonerDesdeLimiteAbajo = False, alturaRow= 20, anchoCol= 3.7)
+    print("valor high table", highTable)
+    crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable , PonerDesdeLimiteAbajo = False, alturaRow= highRow, anchoCol= 8.5, cambiar_pagina=False)
+    
+    # Poner el valor de heighDocumento
+    heighDocumento = highTable - 100  # Dejar un espacio de 100 para la siguiente tabla 
 
-    ##------------------ CUANTOS PRESTAMOS ----------------------------------
-    lienzo.setFont('Helvetica', 10)
-    lienzo.drawString(x=30, y=750,text=f'''1.5  ¡TOTAL PRESTAMOS, CON FILTROS!, ¿Cuántos prestamos hay?:''')
-    lienzo.setFont('Helvetica-Bold', 15)
-    lienzo.drawString(x=370, y=750,text=f'''fdfd ''')
-    lienzo.setFont('Helvetica', 10)
-    lienzo.drawString(x=30, y=735,text='---------------------------------------------------------------------------------------------------------------------------')
+    ## ------------------ SEGUNDA  TABLA (informacion Academica) ----------------------------------
+    # Nombre de la tabla
+    heighDocumento  -= 30
+    nombreTabla = Paragraph("INFORMACIÓN ACADÉMICA DEL ESTUDIANTE: ", styleSubHeader_black)
+    w, h = nombreTabla.wrap(ancho_pagina - 60, heighDocumento)
+    nombreTabla.drawOn(lienzo, 40, heighDocumento)
+    heighDocumento -= h
+    
+    data = []  # Array de datos para la tabla
+
+    # Titulos de la tabla (primera fila); los estilos ya estan creados entonces solo colocar la tabla
+    Campo = Paragraph('Campo', styleHeaderTable2)  # Paragraph <-- le da estilo a un texto
+    Dato = Paragraph('Dato', styleHeaderTable2)
+
+    data.append([Campo, Dato])  # Pasar datos al (array data)
+    highTable = heighDocumento  # Variable HIGH para saber cuanto mover la tabla relativamente hacia arriba
+    highRow = 15  # Variable para la altura de las filas de la tabla
+
+
+    # Agregar datos al array de datos (data) de la tabla
+    for key in keys_info_academica.keys():  
+
+        item = JSONRespuesta.get(key, 'No disponible') # Obtener el valor del DIC usando la key
+
+        if item == "":  
+            item = 'No aplica-no rellenado'  # Si el valor es una cadena vacía, asignar un valor por defecto
+
+        # Crear una fila con el campo y el dato dandole estilo
+        row = [Paragraph(keys_info_academica.get(key), styleHeaderTable), Paragraph(str(item), styleBodyTable)]
+
+        data.append(row)
+        highTable -= highRow  # Reducir el valor de high para la siguiente fila
+
+        if highTable < 360:  # CAMBIAR PAGINA, si se pasa de un numero de datos o high especifico
+
+            # Poner tabla en el CANVAS
+            crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=True, alturaRow=highRow, anchoCol=8.5,cambiar_pagina=True) 
+            
+            # Cambiar el high a 770, ya que alcanzo limite pagina
+            highTable = 770
+            heighDocumento = 770
+
+            data.clear()   # Limpiar datos del array de datos de la tabla
+
+            # Agregar los (nombres Columnas) a la tabla otra vez
+            data.append([Campo, Dato])
+
+    # PARA LOS DATOS RESTANTES, si falto dibujar una parte de la tabla
+    crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=False, alturaRow=highRow, anchoCol=8.5 ,cambiar_pagina=False)
+
+    # Poner el valor de heighDocumento
+    heighDocumento = highTable - 80  # Dejar un espacio de 100 para la siguiente tabla 
+
+    ## ------------------ TERCERA TABLA (informacion familiar) ----------------------------------
+
+    # Nombre de la tabla
+    heighDocumento -= 30
+    nombreTabla = Paragraph("INFORMACIÓN FAMILIAR DEL ESTUDIANTE: (ACUDIENTE 1) ", styleSubHeader_black)
+    w, h = nombreTabla.wrap(ancho_pagina - 60, heighDocumento)
+    nombreTabla.drawOn(lienzo, 40, heighDocumento)      
+    heighDocumento -= h
+    data = []  # Array de datos para
+
+    # Titulos de la tabla (primera fila); los estilos ya estan creados entonces solo colocar la tabla   
+    Campo = Paragraph('Campo', styleHeaderTable2)  # Paragraph <-- le da estilo a un texto
+    Dato = Paragraph('Dato', styleHeaderTable2)
+
+    data.append([Campo, Dato])  # Pasar datos al (array data)
+    highTable = heighDocumento  # Variable HIGH para saber cuanto mover la tabla relativamente hacia arriba
+
+    highRow = 15  # Variable para la altura de las filas de la tabla
+    # Agregar datos al array de datos (data) de la tabla
+    for key in keys_acudiente1.keys():
+        item = JSONRespuesta.get(key, 'No disponible')  # Obtener el valor del DIC usando la key
+
+        if item == "":
+            item = 'No aplica-no rellenado'  # Si el valor es una cadena vacía, asignar un valor por defecto
+
+        # Crear una fila con el campo y el dato dandole estilo
+        row = [Paragraph(keys_acudiente1.get(key), styleHeaderTable), Paragraph(str(item), styleBodyTable)]
+        data.append(row)
+        highTable -= highRow  # Reducir el valor de high para la siguiente fila
+
+        if highTable < 270:  # CAMBIAR PAGINA, si se pasa de un numero de datos o high especifico
+            # Poner tabla en el CANVAS
+            crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=True, alturaRow=highRow, anchoCol=8.5,cambiar_pagina=True)
+
+            # Cambiar el high a 770, ya que alcanzo limite pagina
+            highTable = 770
+            heighDocumento = 770
+
+            data.clear()  # Limpiar datos del array de datos de la tabla
+
+            # Agregar los (nombres Columnas) a la tabla otra vez
+            data.append([Campo, Dato])
+    # PARA LOS DATOS RESTANTES, si falto dibujar una parte de la tabla
+    crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=False, alturaRow=highRow, anchoCol=8.5,cambiar_pagina=False)         
+    # Poner el valor de heighDocumento
+    heighDocumento = highTable - 100  # Dejar un espacio de 100 para la siguiente tabla
+
+    ## ------------------ CUARTA TABLA (informacion familiar 2) ----------------------------------
+    lienzo.showPage()  # Cambiar de página para evitar que la tabla se dibuje fuera de los márgenes
+    heighDocumento = 770  # Reiniciar la altura del documento para la nueva página
+
+    # Nombre de la tabla
+    heighDocumento -= 30
+    nombreTabla = Paragraph("INFORMACIÓN FAMILIAR DEL ESTUDIANTE (ACUDIENTE 2): ", styleSubHeader_black)
+    w, h = nombreTabla.wrap(ancho_pagina - 60, heighDocumento)
+
+    nombreTabla.drawOn(lienzo, 40, heighDocumento)
+    heighDocumento -= h 
+    data = []  # Array de datos para
+    # Titulos de la tabla (primera fila); los estilos ya estan creados entonces solo colocar la tabla
+
+    Campo = Paragraph('Campo', styleHeaderTable2)  # Paragraph <-- le da estilo a un texto
+    Dato = Paragraph('Dato', styleHeaderTable2)
+
+    data.append([Campo, Dato])  # Pasar datos al (array data)
+
+    highTable = heighDocumento  # Variable HIGH para saber cuanto mover la tabla relativamente hacia arriba
+
+    highRow = 15  # Variable para la altura de las filas de la tabla
+
+    # Agregar datos al array de datos (data) de la tabla
+    for key in keys_acudiente2.keys():
+        item = JSONRespuesta.get(key, 'No disponible')  # Obtener el valor del DIC usando la key
+
+        if item == "":
+            item = 'No aplica-no rellenado'  # Si el valor es una cadena vacía, asignar un valor por defecto
+
+        # Crear una fila con el campo y el dato dandole estilo
+        row = [Paragraph(keys_acudiente2.get(key), styleHeaderTable), Paragraph(str(item), styleBodyTable)]
+        
+        data.append(row)
+        highTable -= highRow  # Reducir el valor de high para la siguiente fila
+
+        if highTable < 360:  # CAMBIAR PAGINA, si se pasa de un numero de datos o high especifico
+            # Poner tabla en el CANVAS
+            crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=True, alturaRow=highRow, anchoCol=8.5,cambiar_pagina=True)
+
+            # Cambiar el high a 770, ya que alcanzo limite pagina
+            highTable = 770
+            heighDocumento = 770
+
+            data.clear()  # Limpiar datos del array de datos de la tabla
+
+            # Agregar los (nombres Columnas) a la tabla otra vez
+            data.append([Campo, Dato])
+    # PARA LOS DATOS RESTANTES, si falto dibujar una parte de la tabla
+    crearTablaReportLab_centro(data, lienzo, 2, valorHigh=highTable, PonerDesdeLimiteAbajo=False, alturaRow=highRow, anchoCol=8.5,cambiar_pagina=False)
 
     return None
 
 
-def crearTablaReportLab(data, lienzo:canvas.Canvas, numeroColumnas:int, valorHigh=650, PonerDesdeLimiteAbajo=True, alturaRow=18, anchoCol=3.7 ):
+def crearTablaReportLab_izquierda(data, lienzo:canvas.Canvas, numeroColumnas:int, valorHigh=650, PonerDesdeLimiteAbajo=True, alturaRow=18, anchoCol=3.7 ):
     """_summary_Este metodo es para crear una tabla pasando unos datos y si necesita pasar de pagina en el PDF \n
 
     Args:\n
@@ -253,3 +478,31 @@ def crearTablaReportLab(data, lienzo:canvas.Canvas, numeroColumnas:int, valorHig
     lienzo.showPage()
     return(None)
 
+def crearTablaReportLab_centro(
+    data, lienzo:canvas.Canvas, numeroColumnas:int, valorHigh=650,
+    PonerDesdeLimiteAbajo=True, alturaRow=18, anchoCol=3.7, cambiar_pagina=False
+):
+    high = valorHigh - (len(data) * alturaRow)
+
+    ancho, alto = A4
+    anchoColumnas = [anchoCol * cm] * numeroColumnas
+    table = Table(data, colWidths=anchoColumnas)
+    table.setStyle(TableStyle([
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+
+    total_ancho_tabla = sum(anchoColumnas)
+    x_centrada = (ancho - total_ancho_tabla) / 2
+
+    table.wrapOn(lienzo, ancho, alto)
+
+    # Siempre usa la posición calculada (high), así puedes controlar la altura desde el llamado
+    table.drawOn(lienzo, x_centrada, high)
+
+    if cambiar_pagina:
+        lienzo.showPage()
+
+    return None

@@ -34,7 +34,7 @@ def generate_pdf_pre_registro(id: str):
     ## LLAMAR AL SERVICIO DE GENERACIÓN DE PDF
     buffer = descarga_reportes(DIC_response)
 
-    print(f"Datos obtenidos del pre-registro: {DIC_response}")
+    # print(f"Datos obtenidos del pre-registro: {DIC_response}")
 
     headers = {
         "Content-Disposition": f"attachment; filename=pre_registro_{id}.pdf",
