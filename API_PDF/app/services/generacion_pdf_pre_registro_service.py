@@ -2,45 +2,30 @@ from io import BytesIO
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import inch, cm 
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import  cm 
 from reportlab.platypus import (SimpleDocTemplate, PageBreak, Image, Spacer,Paragraph, Table, TableStyle, )
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 from datetime import datetime, timedelta, timezone as datetimeTimeZone
 
-import requests # Para hacer solicitudes HTTP 
 
-# from fastapi.responses import streamingresponse # Para crear respuestas HTTP de PDF 
+#Importar los estilos creados 
+from app.services.tabla_styles import (styleHeaderPrincipal, styleSubHeader_blue, styleSubHeader_black,
+    styleHeaderTable, styleHeaderTable2, styleBodyTable, styles)
+
+#Importar los diccionarios de los campos de los reportes
+from app.services.keysTables import (keys_info_personal_estudiante, keys_info_academica, keys_acudiente1, keys_acudiente2)
+
+# importar la función para crear tablas (propias creadas)
+from app.services.pdf_utils import crearTablaReportLab_centro, crearTablaReportLab_izquierda
+
+# Importar la configuración del backend
 from app.backend.config import settings
 
 
-def obtener_prematriculas(id: str):
-    # Crear la URL del servidor de la API de pre-registro 
-    url_servidor = settings.url_api_pre_registro
-    url = url_servidor + f"/pre_registration/{id}"  
 
-    # Realizar la solicitud GET a la API 
-    response = requests.get(url)
-
-    # Verificar si la solicitud fue exitosa (código de estado 200)
-    
-    if response.status_code == 200:
-        data = response.json()  # Obtener los datos en formato JSON
-
-        if isinstance(data, dict):  # Si es un diccionario
-            return data.get("documento", None)  # Retornar los datos dentro de la clave "data" o None si no existe
-        elif not data:  # Si no hay datos, retornar None
-            return None
-        
-        return response.json() # Retornar los datos en formato JSON 
-    else:
-        return None
-
-
-# Función para la descarga del PDF
-def descarga_reportes(JSONRespuesta:dict):
+# FUNCIÓN PARA LA DESCARGA DEL PDF 
+async def descarga_reportes(JSONRespuesta:dict):
     """_summary_ 
     \n este metodo es para generar un responseHtml que sea un pdf y se descargue al ingresar a la URL. \n
     """
@@ -66,129 +51,14 @@ def descarga_reportes(JSONRespuesta:dict):
         return({"error": e}) # Retornar error
         
 
+
 #----------------------- CREAR los REPORTES con reportlab ------------------------------------------
-# Reporte prestamo 
+
+
+# FUNCIÓN CREAR EL PDF EN REPORTLAB 
 def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
     ##---------------------------- CREACION ESTILOS -------------------------------------
-    # Llamar a los Estilos
-    styles = getSampleStyleSheet() # nos da una lista de estilos a escoger de la biblioteca
-    
-
-    # Creacion estilo <--  Titulos
-    styleHeaderPrincipal = ParagraphStyle(
-        'HeaderPrincipal',
-        fontName='Helvetica-Bold',
-        fontSize=18,
-        alignment=TA_CENTER,
-        textColor=colors.HexColor("#003366"),
-        spaceAfter=6,
-        spaceBefore=6,
-        leading=22,
-    )
-
-    #  Creacion estilo <--  subtítulos
-    styleSubHeader_blue = ParagraphStyle(
-        'SubHeader',
-        fontName='Helvetica-Bold',
-        fontSize=12,
-        alignment=TA_LEFT,
-        textColor=colors.HexColor("#003366"),
-        spaceAfter=2,
-        spaceBefore=2,
-        leading=15,
-    )
-
-    styleSubHeader_black = ParagraphStyle(
-        'SubHeader',
-        fontName='Helvetica-Bold',
-        fontSize=12,
-        alignment=TA_LEFT,
-        textColor=colors.HexColor("#000000"),
-        spaceAfter=2,
-        spaceBefore=2,
-        leading=15,
-    )
-    # Creacion estilo <-- header tabla
-    styleHeaderTable = ParagraphStyle('styleHeaderTable',  
-        parent= styles['Heading1'],
-        fontSize=10, 
-        alignment=1  # Center alignment
-    )
-
-    # Creacion estilo <-- header tabla 2 
-    styleHeaderTable2 = ParagraphStyle(
-        'styleHeaderTable',
-        parent=styles['Heading4'],
-        fontSize=11,
-        fontName='Helvetica-Bold',
-        alignment=TA_CENTER,
-        textColor=colors.white,
-        backColor=colors.HexColor("#003366"),  # Azul oscuro
-        spaceAfter=4,
-        spaceBefore=4,
-        leading=14,
-        borderPadding=4,
-    )
-
-    # Creacion estilo <-- contenido tabla   
-    styleBodyTable = ParagraphStyle('p',  
-        parent=styles["BodyText"],
-        fontSize=10, 
-        alignment= TA_LEFT  # Left alignment
-    )
-
-    ##---------------------------- KEYS DE LAS TABLAS -------------------------------------
-
-    keys_info_personal_estudiante = {
-        "apellidos": "Apellidos",
-        "nombres": "Nombres",
-        "tipoDocumento": "Tipo de documento",
-        "numeroDocumento": "Número de documento",
-        "fechaNacimiento": "Fecha de nacimiento",
-        "paisNacimiento": "País de nacimiento",
-        "departamentoNacimiento": "Departamento de nacimiento",
-        "municipioNacimiento": "Municipio de nacimiento",
-        "categoriaSisben": "Categoría Sisbén",
-        "subcategoriaSisben": "Subcategoría Sisbén",
-        "direccionResidencia": "Dirección de residencia",
-        "telefono": "Teléfono",
-        "rutaEscolar": "Ruta escolar",
-        "seguroMedico": "Seguro médico",
-        "discapacidad": "Discapacidad",
-        "detalleDiscapacidad": "Detalle de discapacidad",
-        "poblacionDesplazada": "Población desplazada",
-        "fechaDesplazamiento": "Fecha de desplazamiento",
-        "paisResidencia": "País de residencia",
-        "departamentoResidencia": "Departamento de residencia",
-        "municipioResidencia": "Municipio de residencia",
-    }
-
-    # keys Informacion academica
-    keys_info_academica = {
-        "gradoIngreso": "Grado de ingreso",
-        "institucionAnterior": "Institución anterior",
-        "municipioAnterior": "Municipio anterior",
-        "sede": "Sede"
-    }
-
-    # keys Informacion familiar 
-    keys_acudiente1 = {
-        "acudiente1Parentesco": "Parentesco",
-        "acudiente1Apellidos": "Apellidos",
-        "acudiente1Nombres": "Nombres",
-        "acudiente1CC": "Cédula",
-        "acudiente1Celular": "Celular",
-        "acudiente1Ocupacion": "Ocupación"
-    }
-
-    keys_acudiente2 = {
-        "acudiente2Parentesco": "Parentesco",
-        "acudiente2Apellidos": "Apellidos",
-        "acudiente2Nombres": "Nombres",
-        "acudiente2CC": "Cédula",
-        "acudiente2Celular": "Celular",
-        "acudiente2Ocupacion": "Ocupación"
-    }
+    # 
 
     heighDocumento = 770  # Altura de las filas del documento
     ancho_pagina, _ = A4  # Obtener el ancho de la página A4
@@ -440,69 +310,3 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
     return None
 
 
-def crearTablaReportLab_izquierda(data, lienzo:canvas.Canvas, numeroColumnas:int, valorHigh=650, PonerDesdeLimiteAbajo=True, alturaRow=18, anchoCol=3.7 ):
-    """_summary_Este metodo es para crear una tabla pasando unos datos y si necesita pasar de pagina en el PDF \n
-
-    Args:\n
-        \n\t\t data (array): Array de arrays: cada sub array es una fila 
-        \n\t\t lienzo (canvas.Canvas): lienzo canvas
-        \n\t\t numeroColumnas (int): numero de columnas de la tabla
-        \n\t\t valorHigh (int, optional): valor para desde abajo subir la tabla. Defaults to 650.
-        \n\t\t PonerDesdeLimiteAbajo (bool, optional): se pone en 100 la altura de la tabla desde abajo. Defaults to True.
-        \n\t\t alturaRow (int, optional): altura de la fila. Defaults to 18.
-        \n\t\t anchoCol (float, optional): El ancho de la columna. Defaults to 3.7.\n
-       
-    """
-    high = valorHigh - (len(data) * alturaRow)
-
-    # crear la tabla  y estilizar la tabla
-    anchoColumnas = [anchoCol * cm] * numeroColumnas
-    table = Table(data, colWidths=anchoColumnas)
-    table.setStyle(TableStyle([
-        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ]))
-    # Tamaño del PDF
-    ancho, alto = A4
-
-    # Ajuste de coordenadas para evitar que la tabla se dibuje fuera de los márgenes
-    table.wrapOn(lienzo, ancho, alto)
-    if(PonerDesdeLimiteAbajo):
-        table.drawOn(lienzo, 30, 100) 
-    else:
-        table.drawOn(lienzo, 30, high) 
-    
-    # Cambiar de página si es necesario
-    lienzo.showPage()
-    return(None)
-
-def crearTablaReportLab_centro(
-    data, lienzo:canvas.Canvas, numeroColumnas:int, valorHigh=650,
-    PonerDesdeLimiteAbajo=True, alturaRow=18, anchoCol=3.7, cambiar_pagina=False
-):
-    high = valorHigh - (len(data) * alturaRow)
-
-    ancho, alto = A4
-    anchoColumnas = [anchoCol * cm] * numeroColumnas
-    table = Table(data, colWidths=anchoColumnas)
-    table.setStyle(TableStyle([
-        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ]))
-
-    total_ancho_tabla = sum(anchoColumnas)
-    x_centrada = (ancho - total_ancho_tabla) / 2
-
-    table.wrapOn(lienzo, ancho, alto)
-
-    # Siempre usa la posición calculada (high), así puedes controlar la altura desde el llamado
-    table.drawOn(lienzo, x_centrada, high)
-
-    if cambiar_pagina:
-        lienzo.showPage()
-
-    return None

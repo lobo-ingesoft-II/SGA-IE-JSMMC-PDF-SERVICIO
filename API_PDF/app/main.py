@@ -1,14 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import pdf_pre_registro  # Importar las rutas del módulo pdf_pre_registro
-
+from app.routers import pdf_pre_registro_route  # Importar las rutas del módulo pdf_pre_registro
 
 
 # Instancia de FastAPI
 app = FastAPI()
 
 # Importar las rutas
-app.include_router(pdf_pre_registro.router)
+app.include_router(pdf_pre_registro_route.router)
 
 # Configuración de CORS
 app.add_middleware(
