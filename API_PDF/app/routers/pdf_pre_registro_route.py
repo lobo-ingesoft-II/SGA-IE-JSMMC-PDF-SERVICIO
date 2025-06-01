@@ -51,7 +51,7 @@ async def generate_pdf_pre_registro(id: str, background_tasks: BackgroundTasks):
     print(f"Iniciaando el proceso de generación PDF de pre-registro para el ID: {id}")
 
     # Obtener el JSON del pre-registro desde la base de datos 
-    JSON_response = await obtener_prematriculas(id)
+    JSON_response =  obtener_prematriculas(id)
 
     # Si la respuesta es None, lanzar una excepción HTTP 404 
     if not JSON_response:

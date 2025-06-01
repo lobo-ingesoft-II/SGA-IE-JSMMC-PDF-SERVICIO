@@ -2,7 +2,7 @@ import requests # Para hacer solicitudes HTTP
 from app.backend.config import settings
 
 # FUNCIÓN PARA OBTENER JSON DESDE LA API(PRE-MATRICULA)
-async def obtener_prematriculas(id: str):
+def obtener_prematriculas(id: str):
     # Crear la URL del servidor de la API de pre-registro 
     url_servidor = settings.url_api_pre_registro
     url = url_servidor + f"/pre_registration/{id}"  
