@@ -65,6 +65,12 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
     ##------------------------------  HEADER   ---------------------------------
         #HEADER-titulo
 
+    # Ruta a tu imagen
+    imagen = "imagenes\escudo_colegio.png"  # PNG, JPG y otros formatos comunes
+
+    # Imagen Escudo 
+    lienzo.drawImage(imagen, x=480, y=700, width=100, height=100, preserveAspectRatio=True, mask='auto')
+
     # Header principal
     header = Paragraph("INSTITUCIÓN EDUCATIVA DEPARTAMENTAL JOSUÉ MANRIQUE", styleHeaderPrincipal)
     w, h = header.wrap(ancho_pagina - 60, heighDocumento)
@@ -82,6 +88,7 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
     w, h = celular.wrap(ancho_pagina - 60, heighDocumento)
     celular.drawOn(lienzo, 30, heighDocumento)
     heighDocumento -= h
+
 
     # Correo electrónico
     correo = Paragraph("Correo electrónico: coljosman@hotmail.com", styleSubHeader_blue)
