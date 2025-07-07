@@ -6,3 +6,6 @@ requests
 pymongo
 pydantic-settings 
 reportlab
+prometheus_client
+
+
