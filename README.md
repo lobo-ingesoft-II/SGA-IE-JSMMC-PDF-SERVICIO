@@ -71,6 +71,26 @@ Correr el servidor
 uvicorn app.main:app --reload --port 8015
 ```
 
+--- 
+
+### 🚀 Correr pruebas unitarias 
+
+Correr generalmente: 
+
+```bash
+pytest .\app\test\unitTest_generationPDF.py
+```
+
+```bash
+pytest .\app\test\unitTest_getPrematriculas.py
+```
+
+Correr especificamente: 
+De forma mas especifica prueba <test_obtener_prematriculas_success>
+```bash
+pytest app/test/unitTest_queryMongoDB.py::test_obtener_prematriculas_success
+```
+
 ---
 ### ¿Porque puerto 8015 para el servidor Uvicorn?
 Para no tener interferencias con otras APIS si se corre en local
