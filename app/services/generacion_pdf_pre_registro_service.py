@@ -66,7 +66,7 @@ def generarCanvas_Reporte_prestamo(lienzo:canvas.Canvas, JSONRespuesta:dict):
         #HEADER-titulo
 
     # Ruta a tu imagen
-    imagen = "imagenes\escudo_colegio.png"  # PNG, JPG y otros formatos comunes
+    imagen = imagen = "/imagenes/escudo_colegio.png"
 
     # Imagen Escudo 
     lienzo.drawImage(imagen, x=480, y=700, width=100, height=100, preserveAspectRatio=True, mask='auto')
